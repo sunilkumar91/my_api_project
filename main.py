@@ -12,7 +12,7 @@ def monitor_website():
             response = requests.get(URL)
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
             
-            if response.status_code == 200:
+        if response.status_code == 200:
             print(f"[{timestamp}] Success! Status Code: {response.status_code}", flush=True) 
         else:
             print(f"[{timestamp}] Alert! Status Code: {response.status_code}", flush=True)
