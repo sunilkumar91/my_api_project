@@ -1,0 +1,6 @@
+- name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          # ఇక్కడ మీ కొత్త రిపోజిటరీ పేరును ఇవ్వండి
+          tags: sunilkumar443/myapiproject:latest
