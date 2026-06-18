@@ -2,6 +2,7 @@ from flask import Flask
 import requests
 import time
 import threading
+import os
 
 app = Flask(__name__)
 
@@ -25,7 +26,16 @@ def monitor_websites():
                 results[url] = f"Error: {str(e)}"
         time.sleep(20)
 
-# 3. వెబ్ పేజీ డాష్‌బోర్డ్ (CSS మరియు HTML తో)
+# మానిటరింగ్ థ్రెడ్ ఇక్కడ గ్లోబల్ స్కోప్‌లో ఉంది, కాబట్టి Gunicorn దీన్ని రన్ చేస్తుంది
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
+    if not hasattr(app, 'thread_started'):
+        threading.Thread(target=monitor_websites, daemon=True).start()
+        app.thread_started = True
+else:
+    # లోకల్‌గా రన్ చేసేటప్పుడు థ్రెడ్ స్టార్ట్ అవ్వడానికి
+    threading.Thread(target=monitor_websites, daemon=True).start()
+
+# 3. వెబ్ పేజీ డాష్‌బోర్డ్
 @app.route('/')
 def home():
     styles = """
@@ -37,9 +47,7 @@ def home():
         .refresh-btn { 
             padding: 12px 25px; background-color: #3498db; color: white; 
             border: none; cursor: pointer; border-radius: 5px; font-size: 16px;
-            transition: background 0.3s;
         }
-        .refresh-btn:hover { background-color: #2980b9; }
     </style>
     """
     html = f"<html><head>{styles}</head><body>"
@@ -51,20 +59,5 @@ def home():
     html += "</table></body></html>"
     return html
 
-# 4. ఫైల్‌లోని కోడ్‌ను లైన్-బై-లైన్ ప్రింట్ చేసే ఫంక్షన్ (మీరు అడిగినట్లుగా)
-def print_file_lines():
-    with open('main1.py', 'r') as file:
-        lines = file.readlines()
-        print("\n--- Code lines in main1.py ---")
-        for i, line in enumerate(lines, 1):
-            print(f"Line {i}: {line.strip()}")
-
 if __name__ == "__main__":
-    # మానిటరింగ్ స్టార్ట్ చేయండి
-    threading.Thread(target=monitor_websites, daemon=True).start()
-    
-    # ఫైల్ లైన్స్ ప్రింట్ చేయండి
-    print_file_lines()
-    
-    # సర్వర్ స్టార్ట్ చేయండి
     app.run(host='0.0.0.0', port=8080)
